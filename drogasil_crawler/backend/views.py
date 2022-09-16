@@ -11,11 +11,11 @@ from bs4 import BeautifulSoup
 from django.contrib.auth.models import User, Group
 from rest_framework import viewsets
 from rest_framework import permissions
-import requests
 import json
-import pprint
 
-# PARA PEGAR OS ELEMENTOS <SPAN> É NECESSÁRIO USAR UMA FERRAMENTA QUE TRAGA RENDERIZACAO JS
+# PARA PEGAR OS ELEMENTOS <SPAN> É NECESSÁRIO USAR UMA FERRAMENTA QUE TRAGA RENDERIZACAO JS, 
+# POR ISSO O USO DO selenium AO INVES DE REQUISICOES SIMPLES COM O requests
+
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium import webdriver
 
@@ -26,14 +26,15 @@ CLASSE_FRAME_LISTAGEM = "SearchProductsstyles__SearchProductsStyles-sc-1kesk16-0
 CLASSE_CARD_PRODUTOS = "rd-col-8 rd-col-sm-4"
 LINK_COMPRA = "LinkNextstyles__LinkNextStyles-t73o01-0 cpRdBZ LinkNext" # ACESSAR O ATRIBUTO href
 MARCA_PRODUTO = "product-brand"
-INFORMACOES_EXTRAR = "aditional-info" # INFORMACOES EXTRAS COMO PESO DA EMBALAGEM
+INFORMACOES_EXTRAS = "additional-info" # INFORMACOES EXTRAS COMO PESO DA EMBALAGEM
 AVALIACAO_PRODUTO = "TrustVoxRatingStarsstyles__RatingValuesStyles-sc-11ews35-1 biOkhp"
 VALOR_AVALIACAO_PRODUTO = "TrustVoxRatingStarsstyles__RatingValuesStyles-sc-11ews35-1 jKLwc"
-# pp = pprint.PrettyPrinter(indent=4)
+PERCENTUAL_DESCONTO = "percent-tag percent-tag__default"
+
 options = webdriver.ChromeOptions()
 options.add_argument("--headless")
-# @csrf_exempt
 
+# @csrf_exempt
 @api_view(['GET','POST'])
 def home(request, format=None):
     
@@ -46,49 +47,67 @@ def home(request, format=None):
         driver = webdriver.Chrome(options = options)
         driver.get(URL_SEARCH+str(body_unicode))
         page = driver.page_source
-        # body = json.loads(body_unicode)
-        # content = body['content']
-        # req_content = requests.get(URL_SEARCH+str(body_unicode)).text
-        # print(req_content)
-        print('>>>>>>>>>>>>>>>>>>>>>>>>>')
+        print('__________________________')
         print(body_unicode)
-        print('<<<<<<<<<<<<<<<<<<<<<<<<<')
+        print('__________________________')
         soup = BeautifulSoup(page, 'lxml')
-        
-        """ PARA OS PRECOS EM COMBO DE PROMOCAO"""
-        #class="price price-final"
         
         print('_______________________SOUP PRETTIFY________________________________')
         todos_produtos = soup.find("div", attrs={"class": CLASSE_FRAME_LISTAGEM}).find_all("div", attrs={"class": CLASSE_CARD_PRODUTOS})
         parsed_products = []
         for produto in todos_produtos:
             payload = {}
-            dados = produto.find("div", attrs={"class":"ProductCardstyles__ProductCardStyle-iu9am6-4 dheFWb false null"})
-            # print(dados)
-            # dados = produto.find_all("a")
-            # descricao = produto.find("a", attrs={"class":"LinkNextstyles__LinkNextStyles-t73o01-0 cpRdBZ LinkNext"})
+            valores = {}
+            # dados = produto.find("div", attrs={"class":"ProductCardstyles__ProductCardStyle-iu9am6-4 dheFWb false null"})
+            # print(dados.prettify())
             descricao = produto.find("a")["title"]
             print(descricao)
             payload["descricao"] = descricao
-            # print(descricao.title)
-            # attrs={"class":"price-number"}
+            
             """, attrs={"class":"price price-final"}"""
             preco = produto.find("span", attrs={"class":"price-number"})
-            # print(preco)
-            # print(preco.text)
-            payload["valor"] = preco.text
-            # for element in preco:
-            #     element = preco.find
-            #     payload["valor"] = element.text
-            #     print(payload["valor"])
-            # print(produto.text)
-            # print(produto.prettify())
-            # print(produto.find("div", attrs={"class":"product-brand"}))
+            valores["individual"] = preco.text
+
+            preco_em_combo = produto.find("span", attrs={"class": "price price-final"})
+            try:
+                valores["combo"] = preco_em_combo.text
+            except AttributeError:
+                print('nao ha valor em combo para esse produto '+str(descricao))
+
             marca = produto.find("div", attrs={"class":"product-brand"})
             try:
                 payload["marca"] = marca.text
             except AttributeError:
-                payload["marca"] = 'sem marca definida'
+                print('marca nao definida')
+                payload["marca"] = None
+            
+            informacoes_extras = produto.find("div", attrs={"class":INFORMACOES_EXTRAS})
+            payload["informacoes_extras"] = informacoes_extras.text
+            
+            desconto = produto.find("div", attrs={"class":PERCENTUAL_DESCONTO})
+            try:
+                payload["desconto"] = desconto.text
+            except AttributeError:
+                payload["desconto"] = None
+                print('nao ha desconto para esse produto '+str(descricao))
+
+            payload["valores"] = [valores]
+            print(payload)
+            parsed_products.append(payload)
+
+        print('**********************************************************************************')
+        print(len(todos_produtos))
+        
+        return Response({
+            "products":parsed_products
+        })
+
+        #"query":str(body_unicode), 
+
+        # print(dados)
+            # dados = produto.find_all("a")
+            # descricao = produto.find("a", attrs={"class":"LinkNextstyles__LinkNextStyles-t73o01-0 cpRdBZ LinkNext"})
+
             # if len(preco) > 1:
             #     for element in preco[1]:
             #         payload["valores"]["combo"] = element.text
@@ -105,14 +124,30 @@ def home(request, format=None):
             # payload["marca"] = [marca]
             # payload["valores"] = [valores]
             # payload.append(produto, preco)
-            print(payload)
-            parsed_products.append(payload)
 
-        print('**********************************************************************************')
-        print(len(todos_produtos))
-        
-        return Response({
-            "products":parsed_products
-        })
+            # for element in preco:
+            #     element = preco.find
+            #     payload["valor"] = element.text
+            #     print(payload["valor"])
+            # print(produto.text)
+            # print(produto.prettify())
+            # print(produto.find("div", attrs={"class":"product-brand"}))
 
-        #"query":str(body_unicode), 
+            # PARA OS PRECOS EM COMBO DE PROMOCAO
+            #class="price price-final"
+
+            # print(descricao.title)
+            # attrs={"class":"price-number"}
+
+            # print(preco)
+            # print(preco.text)
+
+            # body = json.loads(body_unicode)
+        # content = body['content']
+        # req_content = requests.get(URL_SEARCH+str(body_unicode)).text
+        # print(req_content)
+
+        # try:
+            #     payload["desconto"] = desconto.text
+            # except AttributeError:
+            #     payload["desconto"] = None
