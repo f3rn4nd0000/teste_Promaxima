@@ -3,3 +3,5 @@ lxml
 django
 djangorestframework
 requests
+selenium
+webdriver-manager

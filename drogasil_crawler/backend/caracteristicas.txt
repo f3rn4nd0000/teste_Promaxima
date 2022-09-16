@@ -1,0 +1,11 @@
+elemento:
+    <span class="TrustVoxRatingStarsstyles__RatingValuesStyles-sc-11ews35-1 biOkhp">
+     0
+     <!-- -->
+     de
+     <!-- -->
+     5
+    </span>
+representa avaliacao do produto em estrelas
+
+entao pra acessar seria
