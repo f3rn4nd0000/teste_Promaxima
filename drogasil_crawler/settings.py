@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-xxxt)3k1*v4c5kw*6#^*&m^wam@^^j!kv6%lwhp05p5q)5@0yd
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['teste-promaxima.herokuapp.com','127.0.0.1:8000']
+ALLOWED_HOSTS = ['https://teste-promaxima.herokuapp.com','http:127.0.0.1:8000']
 
 
 # Application definition
