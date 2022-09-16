@@ -6,3 +6,4 @@ requests
 selenium
 webdriver-manager
 gunicorn
+django-cors-headers

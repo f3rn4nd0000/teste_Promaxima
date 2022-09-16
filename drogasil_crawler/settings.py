@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-xxxt)3k1*v4c5kw*6#^*&m^wam@^^j!kv6%lwhp05p5q)5@0yd
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['https://teste-promaxima.herokuapp.com','teste-promaxima.herokuapp.com','http:127.0.0.1:8000']
+ALLOWED_HOSTS = ['https://teste-promaxima.herokuapp.com','teste-promaxima.herokuapp.com','localhost','127.0.0.1']
 
 
 # Application definition
@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -48,6 +49,14 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
+]
+
+CORS_ORIGIN_ALLOW_ALL = True
+
+CORS_ORIGIN_WHITELIST = [
+    'http://127.0.0.1:8000',
+    'http://localhost:8000'
 ]
 
 ROOT_URLCONF = 'drogasil_crawler.urls'
