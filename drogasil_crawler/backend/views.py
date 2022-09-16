@@ -31,6 +31,12 @@ AVALIACAO_PRODUTO = "TrustVoxRatingStarsstyles__RatingValuesStyles-sc-11ews35-1 
 VALOR_AVALIACAO_PRODUTO = "TrustVoxRatingStarsstyles__RatingValuesStyles-sc-11ews35-1 jKLwc"
 PERCENTUAL_DESCONTO = "percent-tag percent-tag__default"
 
+PRECO = "Pricestyles__ProductPriceStyles-sc-118x8ec-0 eIdmcC price"
+""" CASO O PRODUTO APRESENTE VERSAO DE COMPRA INDIVIDUAL E COMPRA EM COMBO"""
+PRECO_INDIVIDUAL = "Pricestyles__ProductPriceStyles-sc-118x8ec-0 bYZdsN price"
+PRECO_PROMOCAO = "Pricestyles__ProductPriceStyles-sc-118x8ec-0 gffdIx price"
+
+
 options = webdriver.ChromeOptions()
 options.add_argument("--headless")
 
@@ -65,14 +71,50 @@ def home(request, format=None):
             payload["descricao"] = descricao
             
             """, attrs={"class":"price price-final"}"""
-            preco = produto.find("span", attrs={"class":"price-number"})
-            valores["individual"] = preco.text
+            # precos = produto.find_all("span", attrs={"class":"price-number"})
+            # print(precos.text)
+            # valores["individual"] = preco.text
+            
+            if produto.find("div", attrs={"class":PRECO_INDIVIDUAL}) is not None:
+                preco_individual = produto.find("div", attrs={"class":PRECO_INDIVIDUAL})
+                preco_promocao = produto.find("div", attrs={"class":PRECO_PROMOCAO})
+                try:
+                    valores["individual"] = preco_individual.text
+                except AttributeError as e:
+                    print(e)
+                try:
+                    valores["promocao"] = preco_promocao.text
+                except AttributeError as e:
+                    print(e)
+            else:
+                preco_individual = produto.find("div", attrs={"class":PRECO})
+                try:
+                    valores["individual"] = preco_individual.text
+                except AttributeError as e:
+                    print(e)
+                valores["promocao"] = None
 
-            preco_em_combo = produto.find("span", attrs={"class": "price price-final"})
-            try:
-                valores["combo"] = preco_em_combo.text
-            except AttributeError:
-                print('nao ha valor em combo para esse produto '+str(descricao))
+            # for preco in precos:
+            #     print('preco')
+            #     print(preco.text)
+            #     # print('preco 1')
+            #     # print(preco[1].text)
+            #     try:
+            #         valores["individual"] = preco.text
+            #     except KeyError as e:
+            #         print(e)
+            #         continue
+            #     try:
+            #         valores["combo"] = preco[1].text
+            #     except AttributeError:
+            #         print('nao ha valor em combo para esse produto '+str(descricao))
+            #         continue
+
+            # preco_em_combo = produto.find("span", attrs={"class": "price price-final"})
+            # try:
+            #     valores["combo"] = preco_em_combo.text
+            # except AttributeError:
+            #     print('nao ha valor em combo para esse produto '+str(descricao))
 
             marca = produto.find("div", attrs={"class":"product-brand"})
             try:
