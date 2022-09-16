@@ -49,6 +49,8 @@ def home(request, format=None):
         return Response(content)
     
     if request.method == 'POST':
+        # print(request)
+        # print(request.POST)
         body_unicode = request.body.decode('utf-8')
         driver = webdriver.Chrome(options = options)
         driver.get(URL_SEARCH+str(body_unicode))
