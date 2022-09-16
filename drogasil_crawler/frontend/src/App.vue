@@ -1,11 +1,9 @@
 <script setup>
-import HelloWorld from './components/HelloWorld.vue'
-import TheWelcome from './components/TheWelcome.vue'
 import SearchBar from './components/SearchBar.vue'
 </script>
 
 <template>
-    <SearchBar />
+  <SearchBar />
 </template>
 
 <style scoped>

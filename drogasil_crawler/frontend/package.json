@@ -8,10 +8,14 @@
   },
   "dependencies": {
     "axios": "^0.27.2",
-    "vue": "^3.2.38"
+    "bootstrap-vue": "^2.22.0",
+    "vue": "^3.2.39"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^3.0.3",
+    "bootstrap": "^5.2.1",
+    "jquery": "^3.6.1",
+    "popper.js": "^1.16.1",
     "vite": "^3.0.9"
   }
 }
